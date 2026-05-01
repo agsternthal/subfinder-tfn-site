@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Dashboard — Comeback Gear LLC</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0d1117;color:#c9d1d9;line-height:1.5;padding:16px}
+    .wrap{max-width:900px;margin:0 auto}
+    h1{font-size:20px;font-weight:600;margin-bottom:4px;color:#f0f6fc}
+    .sub{font-size:13px;color:#8b949e;margin-bottom:20px}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+    .metric{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
+    .metric .label{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px}
+    .metric .val{font-size:22px;font-weight:600;margin-top:2px}
+    .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+    .filters button{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid #30363d;background:#161b22;color:#8b949e;cursor:pointer;transition:all .15s}
+    .filters button:hover{border-color:#58a6ff;color:#58a6ff}
+    .filters button.active{background:#1f6feb;border-color:#1f6feb;color:#fff}
+    .section{margin-bottom:14px;border:1px solid #30363d;border-radius:8px;background:#161b22;overflow:hidden}
+    .sec-head{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;user-select:none}
+    .sec-head:hover{background:#1c2128}
+    .sec-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .sec-title{font-size:14px;font-weight:500;color:#f0f6fc;flex:1}
+    .sec-count{font-size:12px;color:#8b949e;background:#21262d;padding:2px 8px;border-radius:10px}
+    .sec-arrow{color:#8b949e;font-size:12px;transition:transform .2s}
+    .sec-arrow.open{transform:rotate(90deg)}
+    .sec-body{border-top:1px solid #30363d}
+    .sec-body.collapsed{display:none}
+    .item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;border-bottom:1px solid #21262d}
+    .item:last-child{border-bottom:none}
+    .item:hover{background:#1c2128}
+    .item-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #30363d;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .item-check.checked{background:#1f6feb;border-color:#1f6feb}
+    .item-check.checked::after{content:"";display:block;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-2px}
+    .item-text{flex:1;color:#c9d1d9}
+    .item-text.checked-text{text-decoration:line-through;color:#484f58}
+    .item-note{font-size:11px;color:#6e7681;max-width:200px;text-align:right}
+    .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;white-space:nowrap}
+    .b-todo{background:#21262d;color:#8b949e}
+    .b-done{background:#0d4429;color:#3fb950}
+    .b-ready{background:#0c2d6b;color:#58a6ff}
+    .b-testing{background:#3d2e00;color:#d29922}
+    .b-high{background:#4a0e0e;color:#f85149}
+    .b-bug{background:#4a0e0e;color:#f85149}
+    .b-inconclusive{background:#3d2e00;color:#d29922}
+    .b-blocked{background:#4a0e0e;color:#f85149}
+    .b-paused{background:#3d2e00;color:#d29922}
+    .b-deferred{background:#21262d;color:#8b949e}
+    .updated{font-size:11px;color:#484f58;text-align:center;margin-top:20px}
+    @media(max-width:600px){
+      body{padding:10px}
+      .metrics{grid-template-columns:repeat(2,1fr)}
+      .item-note{max-width:120px}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>command center</h1>
+  <div class="sub">Comeback Gear LLC — HeardUp / SubFinder / Ebook / RevText</div>
+  <div class="metrics" id="metrics"></div>
+  <div class="filters" id="filters"></div>
+  <div id="sections"></div>
+  <div class="updated" id="updated"></div>
+</div>
+
+<script>
+// ===== TASK DATA — UPDATE THIS BLOCK TO REFRESH DASHBOARD =====
+const LAST_UPDATED = "May 1, 2026 7:30 PM ET";
+
+const DATA = {
+  "Quick wins": {
+    color: "#3fb950",
+    items: [
+      { t: "Request 10DLC brand vetting", s: "todo", n: "~$40 via Telnyx dashboard" },
+      { t: "Resend Mariah's invite", s: "todo", n: "mariahfaithking@gmail.com" },
+      { t: "Reset super-admin password", s: "todo", n: "broadstreetfarms changed it" },
+      { t: "Fix Carol's phone number", s: "todo", n: "Using Andrew's web phone #" },
+      { t: "Fund Telnyx + auto-recharge", s: "todo", n: "$50 deposit, $15/$50 reload" }
+    ]
+  },
+  "HeardUp — blocking": {
+    color: "#f85149",
+    items: [
+      { t: "Custom invite flow (Resend)", s: "done", n: "Done on dev, needs cherry-pick" },
+      { t: "Telnyx auto-recharge + alerts", s: "todo", n: "SMS went down May 1" },
+      { t: "Org creation must seed default location", s: "todo", n: "Blocks next onboarding" },
+      { t: "CSV import: map to real location IDs", s: "todo" }
+    ]
+  },
+  "HeardUp — bugs": {
+    color: "#f0883e",
+    items: [
+      { t: "No logout on mobile", s: "bug", n: "topBar display:none hides it" },
+      { t: "CSV import: no hourly_rate", s: "bug" },
+      { t: "CSV import: location = email domain", s: "inconclusive" },
+      { t: "Wrong FROM on 'account not found'", s: "bug" },
+      { t: "trackSmsUsage missing location_id", s: "bug", n: "9 of 12 call sites" },
+      { t: "Silent SMS catch blocks", s: "bug" },
+      { t: "sms_name not in all handlers", s: "bug" },
+      { t: "Telnyx opt-out DB drift", s: "bug", n: "No webhook handler" },
+      { t: "GSM-7 phases 2 & 3", s: "bug" },
+      { t: "Quiz scoring", s: "inconclusive" }
+    ]
+  },
+  "HeardUp — dev queue": {
+    color: "#a371f7",
+    items: [
+      { t: "Invite observability logging", s: "ready", n: "1c7178a" },
+      { t: "Super-admin Team page + toast", s: "ready", n: "b10d3d6" },
+      { t: "Short link resolver fail-closed", s: "ready", n: "134c6eb" },
+      { t: "Temporary availability feature", s: "ready", n: "3 commits" },
+      { t: "Shift Trade web card", s: "testing", n: "Migration + API + Swaps tab" },
+      { t: "Team page enhancements", s: "ready" },
+      { t: "Custom invite flow (Resend)", s: "ready", n: "Tested e2e with iCloud" },
+      { t: "Session expiry auth guard", s: "ready" },
+      { t: "Redirect loop fix", s: "ready" },
+      { t: "Dev SMS link generators", s: "ready" }
+    ]
+  },
+  "HeardUp — backlog": {
+    color: "#58a6ff",
+    items: [
+      { t: "Role-based color coding", s: "high", n: "Both pilots requesting — HIGH" },
+      { t: "Shift Trade remaining", s: "todo", n: "Expiry cron, manager SMS, timing" },
+      { t: "Design refresh", s: "blocked", n: "Mobile CSS" },
+      { t: "Manager Inbox", s: "todo", n: "Next major after Shift Trade" },
+      { t: "Timezone hardening", s: "deferred", n: "11 bugs, all Eastern now" },
+      { t: "Location management UI", s: "todo" },
+      { t: "Short link resolver scalability", s: "deferred", n: "Needs DB-native lookup at scale" }
+    ]
+  },
+  "AlliCat cleanup": {
+    color: "#d29922",
+    items: [
+      { t: "Create location row", s: "todo", n: "Need name/address from Alexandra" },
+      { t: "Normalize staff roles", s: "todo" },
+      { t: "Fix 4 staff with 16-17h shifts", s: "todo", n: "AM/PM entry errors" }
+    ]
+  },
+  "SubFinder — auth & multi-tenancy": {
+    color: "#f778ba",
+    items: [
+      { t: "Phase 1: Schema prep", s: "todo" },
+      { t: "Phase 2: Auth clients + pages", s: "todo" },
+      { t: "Phase 3: Middleware + org resolution", s: "todo" },
+      { t: "Phase 4: Org-scope all queries", s: "todo", n: "16 files" },
+      { t: "Phase 5: Tighten RLS", s: "todo" },
+      { t: "Phase 6: Team invites", s: "todo" },
+      { t: "Phase 7: Super-admin", s: "todo" }
+    ]
+  },
+  "Ebook": {
+    color: "#3fb950",
+    items: [
+      { t: "Continue chapter drafts", s: "todo" },
+      { t: "Finalize tone", s: "todo", n: "Holderness Family style" },
+      { t: "Build launch list", s: "todo", n: "LinkedIn 500+ connections" },
+      { t: "HeardUp case study", s: "todo" }
+    ]
+  },
+  "RevText": {
+    color: "#8b949e",
+    items: [
+      { t: "Follow up with Steve", s: "todo", n: "Post 4/17 meeting" },
+      { t: "Strip shipping, focus foot traffic", s: "todo" },
+      { t: "Mike's new owners = pilot customer", s: "todo" }
+    ]
+  },
+  "Infrastructure": {
+    color: "#8b949e",
+    items: [
+      { t: "Telnyx SMS cost audit", s: "todo", n: "Pull logs, calc per-msg costs" },
+      { t: "Dev Supabase SMTP setup", s: "todo" },
+      { t: "Telnyx balance-check cron", s: "todo", n: "GET /v2/balance every 6h" },
+      { t: "10DLC brand vetting", s: "todo" },
+      { t: "Separate domain setup", s: "paused", n: "Abandoned mid-task" }
+    ]
+  }
+};
+// ===== END TASK DATA =====
+
+const BADGE = {
+  done:{l:"Done",c:"b-done"},ready:{l:"Ready",c:"b-ready"},testing:{l:"Testing",c:"b-testing"},
+  high:{l:"High",c:"b-high"},bug:{l:"Bug",c:"b-bug"},inconclusive:{l:"Inconclusive",c:"b-inconclusive"},
+  blocked:{l:"Blocked",c:"b-blocked"},paused:{l:"Paused",c:"b-paused"},deferred:{l:"Deferred",c:"b-deferred"},
+  todo:{l:"To do",c:"b-todo"}
+};
+
+let filter = "all";
+let checked = JSON.parse(localStorage.getItem("dash_checked")||"{}");
+
+function save(){localStorage.setItem("dash_checked",JSON.stringify(checked))}
+
+function count(statuses){
+  return Object.values(DATA).flatMap(s=>s.items).filter(i=>statuses.includes(i.s)).length;
+}
+
+function render(){
+  const all = Object.values(DATA).flatMap(s=>s.items);
+  const checkedCount = Object.keys(checked).length;
+
+  document.getElementById("metrics").innerHTML = [
+    met("Total",all.length,"#f0f6fc"),
+    met("Done / checked",count(["done"])+checkedCount,"#3fb950"),
+    met("Ready to ship",count(["ready","testing"]),"#58a6ff"),
+    met("Bugs",count(["bug","inconclusive"]),"#f85149"),
+    met("High / blocked",count(["high","blocked"]),"#f0883e")
+  ].join("");
+
+  const keys = Object.keys(DATA);
+  let fh = '<button class="'+(filter==="all"?"active":"")+'" onclick="setF(\'all\')">All</button>';
+  keys.forEach(k=>{
+    fh+='<button class="'+(filter===k?"active":"")+'" onclick="setF(\''+k.replace(/'/g,"\\'")+"')\">"+k+" ("+DATA[k].items.length+")</button>";
+  });
+  document.getElementById("filters").innerHTML = fh;
+
+  let sh = "";
+  keys.forEach(name=>{
+    if(filter!=="all"&&filter!==name)return;
+    const sec = DATA[name];
+    sh+='<div class="section"><div class="sec-head" onclick="toggle(this)">';
+    sh+='<div class="sec-dot" style="background:'+sec.color+'"></div>';
+    sh+='<div class="sec-title">'+name+'</div>';
+    sh+='<div class="sec-count">'+sec.items.length+'</div>';
+    sh+='<div class="sec-arrow open">&#9654;</div></div>';
+    sh+='<div class="sec-body">';
+    sec.items.forEach((item,i)=>{
+      const key = name+"::"+i;
+      const ck = checked[key]||item.s==="done";
+      sh+='<div class="item">';
+      sh+='<div class="item-check'+(ck?" checked":"")+'" onclick="chk(\''+key.replace(/'/g,"\\'")+'\',this)"></div>';
+      sh+='<div class="item-text'+(ck?" checked-text":"")+'">'+item.t+'</div>';
+      if(item.n)sh+='<div class="item-note">'+item.n+'</div>';
+      const b=BADGE[item.s]||BADGE.todo;
+      sh+='<span class="badge '+b.c+'">'+b.l+'</span>';
+      sh+='</div>';
+    });
+    sh+='</div></div>';
+  });
+  document.getElementById("sections").innerHTML = sh;
+  document.getElementById("updated").textContent = "Last updated: "+LAST_UPDATED;
+}
+
+function met(label,val,color){
+  return '<div class="metric"><div class="label">'+label+'</div><div class="val" style="color:'+color+'">'+val+'</div></div>';
+}
+
+function setF(f){filter=f;render()}
+
+function toggle(el){
+  const body=el.nextElementSibling;
+  const arrow=el.querySelector(".sec-arrow");
+  body.classList.toggle("collapsed");
+  arrow.classList.toggle("open");
+}
+
+function chk(key,el){
+  if(checked[key]){delete checked[key]}else{checked[key]=true}
+  save();render();
+}
+
+render();
+</script>
+</body>
+</html>
