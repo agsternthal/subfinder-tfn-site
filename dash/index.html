@@ -95,27 +95,50 @@
 
 <script>
 // ===== TASK DATA — UPDATE THIS BLOCK TO REFRESH DASHBOARD =====
-// Last synced against actual git repo state (main vs dev) on May 2, 2026
-var LAST_UPDATED = "May 2, 2026 — repo-verified";
+// Last synced: May 2, 2026 (evening) — all Andrew's inbox/notes from screenshots processed
+var LAST_UPDATED = "May 2, 2026 (evening) — inbox processed, notes integrated";
 
 var DATA = {
   "Quick wins": {
     color: "#3fb950",
     items: [
-      { t: "Request 10DLC brand vetting", s: "todo", n: "~$40 via Telnyx dashboard" },
-      { t: "Resend Mariah's invite", s: "todo", n: "mariahfaithking@gmail.com" },
-      { t: "Reset super-admin password", s: "todo", n: "broadstreetfarms changed it" },
+      { t: "Request 10DLC brand vetting", s: "deferred", n: "Defer until more clients. URL issue documented." },
+      { t: "Resend Mariah's invite", s: "done", n: "mariahfaithking@gmail.com" },
+      { t: "Reset super-admin password", s: "done", n: "Leaving as-is, Andrew has it noted" },
       { t: "Fix Carol's phone number", s: "todo", n: "Using Andrew's web phone #" },
-      { t: "Fund Telnyx + auto-recharge", s: "todo", n: "$50 deposit, $15/$50 reload" }
+      { t: "Fund Telnyx + auto-recharge", s: "done", n: "Refilled to $10, auto-reload to $10" }
+    ]
+  },
+  "Sales & Prospects": {
+    color: "#da70d6",
+    items: [
+      { t: "Church Cafe", s: "todo", n: "Dori lead" },
+      { t: "Saba Landscaping", s: "todo", n: "Andrew lead" },
+      { t: "Mary's", s: "todo", n: "Dori lead" },
+      { t: "Rita's Lansdale", s: "todo", n: "Andrew lead" },
+      { t: "Benny the Bums", s: "todo", n: "Andrew lead" },
+      { t: "Cleaning Co", s: "todo", n: "Andrew lead" },
+      { t: "Barry Caplan/Porter", s: "todo", n: "Andrew lead" },
+      { t: "Lee's Hoagies", s: "todo", n: "Andrew lead" }
+    ]
+  },
+  "Business & Growth": {
+    color: "#e040fb",
+    items: [
+      { t: "Full cost audit + pricing plans", s: "high", n: "ASAP — need to set pricing" },
+      { t: "Payment mechanism", s: "high", n: "Need to collect from clients" },
+      { t: "Automated online outreach", s: "todo", n: "Expand client base ASAP" },
+      { t: "Build CRM for client mgmt + outreach", s: "todo", n: "Track prospects and pipeline" }
     ]
   },
   "HeardUp — blocking": {
     color: "#f85149",
     items: [
       { t: "Cloudflare for TLS/DNS", s: "high", n: "Xfinity blocks all *.tryheardup.com" },
-      { t: "Telnyx auto-recharge + alerts", s: "todo", n: "SMS went down May 1" },
-      { t: "Org creation must seed default location", s: "todo", n: "Blocks next onboarding" },
-      { t: "CSV import: map to real location IDs", s: "todo" }
+      { t: "Telnyx internal expense tracking", s: "todo", n: "Build visibility into what/when we're charged" },
+      { t: "Org creation must seed default location", s: "todo", n: "Blocks next onboarding — check if Brandon's setup already did this" },
+      { t: "CSV import: audit location mapping", s: "todo", n: "Does it work for location now? Need to audit and understand" },
+      { t: "SMS location branding audit", s: "high", n: "Wake texts show 3 different formats — need consistency" }
     ]
   },
   "HeardUp — on main (shipped)": {
@@ -142,7 +165,7 @@ var DATA = {
       { t: "Reinvite + forgot password + recovery token", s: "ready", n: "2ade955" },
       { t: "Mobile logout fix", s: "ready", n: "51ca6a9 — UserAvatar fixed top-right" },
       { t: "SMS links use NEXT_PUBLIC_SITE_URL", s: "ready", n: "5e1f445" },
-      { t: "Shift Trade MVP", s: "testing", n: "5 commits — SMS keywords, Pool tab, Swaps tab" }
+      { t: "Shift Trade MVP", s: "testing", n: "Andrew needs to test webcard on dev" }
     ]
   },
   "HeardUp — bugs": {
@@ -150,45 +173,50 @@ var DATA = {
     items: [
       { t: "CSV import: no hourly_rate", s: "bug" },
       { t: "CSV import: location = email domain", s: "inconclusive" },
-      { t: "Wrong FROM on 'account not found'", s: "bug" },
+      { t: "Wrong FROM on 'account not found'", s: "bug", n: "Error reply uses default Telnyx # instead of org's #" },
       { t: "trackSmsUsage missing location_id", s: "bug", n: "9 of 12 call sites" },
       { t: "Silent SMS catch blocks", s: "bug" },
       { t: "sms_name not in all handlers", s: "bug" },
-      { t: "Telnyx opt-out DB drift", s: "bug", n: "No webhook handler" },
-      { t: "GSM-7 phases 2 & 3", s: "bug" },
+      { t: "Telnyx opt-out DB drift", s: "bug", n: "COMPLIANCE: STOP works at Telnyx but DB never updates sms_opted_out" },
       { t: "Quiz scoring", s: "inconclusive" }
     ]
   },
   "HeardUp — backlog": {
     color: "#58a6ff",
     items: [
-      { t: "Role-based color coding", s: "high", n: "Both pilots requesting — HIGH" },
-      { t: "Shift Trade remaining", s: "todo", n: "Expiry cron, manager SMS, timing" },
+      { t: "Manager Inbox", s: "high", n: "NEXT BIG PROJECT — high priority" },
+      { t: "Role-based color coding", s: "high", n: "Both pilots requesting" },
+      { t: "Shift Trade remaining", s: "todo", n: "MVP on dev needs testing. Remaining: expiry cron, manager SMS, timing" },
       { t: "Design refresh", s: "blocked", n: "Mobile CSS" },
-      { t: "Manager Inbox", s: "todo", n: "Next major after Shift Trade" },
-      { t: "Timezone hardening", s: "deferred", n: "11 bugs, all Eastern now" },
-      { t: "Location management UI", s: "todo" },
-      { t: "Short link resolver scalability", s: "deferred", n: "Needs DB-native lookup at scale" }
+      { t: "GSM-7 optimization (phases 2 & 3)", s: "todo", n: "Cost reduction — normalize all outbound SMS to save segments" },
+      { t: "Timezone hardening", s: "deferred", n: "11 bugs. All Eastern now — need complexity estimate" },
+      { t: "Location management UI", s: "todo", n: "Managers edit staff location. What else needed?" },
+      { t: "Short link resolver scalability", s: "todo", n: "Tied to SMS length/cost — bundle with GSM-7 work" },
+      { t: "Market expansion: landscapers + other shifts", s: "todo", n: "Make HeardUp generic OR add modules for new markets" },
+      { t: "Wire up HeardUp marketing landing page", s: "todo", n: "Claude Design created it, needs deployment" }
     ]
   },
   "AlliCat cleanup": {
     color: "#d29922",
     items: [
-      { t: "Create location row", s: "todo", n: "Need name/address from Alexandra" },
-      { t: "Normalize staff roles", s: "todo" },
-      { t: "Fix 4 staff with 16-17h shifts", s: "todo", n: "AM/PM entry errors" }
+      { t: "Create location row", s: "done", n: "AlliCat out of pilot" },
+      { t: "Normalize staff roles", s: "done", n: "AlliCat out of pilot" },
+      { t: "Fix 4 staff with 16-17h shifts", s: "done", n: "AlliCat out of pilot" }
     ]
   },
   "SubFinder — auth & multi-tenancy": {
     color: "#f778ba",
     items: [
-      { t: "Phase 1: Schema prep", s: "todo" },
-      { t: "Phase 2: Auth clients + pages", s: "todo" },
-      { t: "Phase 3: Middleware + org resolution", s: "todo" },
-      { t: "Phase 4: Org-scope all queries", s: "todo", n: "16 files" },
-      { t: "Phase 5: Tighten RLS", s: "todo" },
-      { t: "Phase 6: Team invites", s: "todo" },
-      { t: "Phase 7: Super-admin", s: "todo" }
+      { t: "Phase 1: Schema prep", s: "done", n: "e22b637 — all tables + org_id on data tables" },
+      { t: "Phase 2: Auth clients + pages", s: "done", n: "e22b637 — @supabase/ssr, login/signup/callback/set-password" },
+      { t: "Phase 3: Middleware + org resolution", s: "done", n: "e0545cd — auth middleware + OrgContext" },
+      { t: "Phase 4: Org-scope all queries", s: "done", n: "429344f — 12 files with org_id filters" },
+      { t: "Phase 5: Tighten RLS", s: "done", n: "31a6c54 — restrictive policies, is_org_member()" },
+      { t: "Phase 6: Team invites", s: "done", n: "70bdb1c — /team page + invite flow" },
+      { t: "Phase 7: Super-admin", s: "done", n: "862043a — org switching + audit log" },
+      { t: "10DLC brand + campaign app", s: "todo", n: "Use HeardUp's approved application as template" },
+      { t: "Landing page deployment", s: "todo", n: "Claude Design created page, needs public URL" },
+      { t: "Get a URL for SubFinder", s: "todo", n: "Need domain" }
     ]
   },
   "Ebook": {
@@ -212,9 +240,9 @@ var DATA = {
     color: "#8b949e",
     items: [
       { t: "Telnyx SMS cost audit", s: "todo", n: "Pull logs, calc per-msg costs" },
-      { t: "Dev Supabase SMTP setup", s: "todo" },
-      { t: "Telnyx balance-check cron", s: "todo", n: "GET /v2/balance every 6h" },
-      { t: "10DLC brand vetting", s: "todo" },
+      { t: "Dev Supabase SMTP setup", s: "done" },
+      { t: "Telnyx balance-check cron", s: "todo", n: "GET /v2/balance every 6h — yes we can build this" },
+      { t: "10DLC brand vetting", s: "deferred", n: "Wait until more clients" },
       { t: "Separate domain setup", s: "paused", n: "Abandoned mid-task" }
     ]
   }
