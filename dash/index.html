@@ -29,10 +29,11 @@
     .sec-arrow.open{transform:rotate(90deg)}
     .sec-body{border-top:1px solid #30363d}
     .sec-body.collapsed{display:none}
-    .item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;border-bottom:1px solid #21262d}
+    .item{display:flex;align-items:flex-start;gap:8px;padding:8px 14px;font-size:13px;border-bottom:1px solid #21262d;flex-wrap:wrap}
     .item:last-child{border-bottom:none}
     .item:hover{background:#1c2128}
-    .item-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #30363d;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .item-row{display:flex;align-items:center;gap:8px;width:100%}
+    .item-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #30363d;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px}
     .item-check.checked{background:#1f6feb;border-color:#1f6feb}
     .item-check.checked::after{content:"";display:block;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-2px}
     .item-text{flex:1;color:#c9d1d9}
@@ -50,6 +51,30 @@
     .b-paused{background:#3d2e00;color:#d29922}
     .b-deferred{background:#21262d;color:#8b949e}
     .updated{font-size:11px;color:#484f58;text-align:center;margin-top:20px}
+    .note-btn{background:none;border:none;color:#484f58;cursor:pointer;font-size:14px;padding:0 2px;line-height:1;flex-shrink:0}
+    .note-btn:hover{color:#58a6ff}
+    .note-btn.has-note{color:#f0883e}
+    .user-note{width:100%;margin-top:4px;padding:4px 0 0 24px}
+    .user-note-text{font-size:12px;color:#f0883e;background:#1c1206;border:1px solid #3d2e00;border-radius:4px;padding:4px 8px;display:inline-block;max-width:100%}
+    .user-note-edit{width:calc(100% - 24px);margin-left:24px;background:#0d1117;border:1px solid #f0883e;border-radius:4px;padding:5px 8px;color:#f0883e;font-size:12px;outline:none;margin-top:4px}
+    .inbox-wrap{margin-bottom:20px;border:1px solid #f0883e;border-radius:8px;background:#161b22;overflow:hidden}
+    .inbox-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1206;border-bottom:1px solid #f0883e}
+    .inbox-header h2{font-size:14px;font-weight:500;color:#f0883e;flex:1}
+    .inbox-count{font-size:12px;color:#f0883e;background:#3d2e00;padding:2px 8px;border-radius:10px}
+    .inbox-add{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid #21262d}
+    .inbox-add input{flex:1;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:7px 10px;color:#c9d1d9;font-size:13px;outline:none}
+    .inbox-add input:focus{border-color:#58a6ff}
+    .inbox-add input::placeholder{color:#484f58}
+    .inbox-add button{background:#1f6feb;border:none;border-radius:6px;padding:7px 14px;color:#fff;font-size:13px;cursor:pointer;font-weight:500}
+    .inbox-add button:hover{background:#388bfd}
+    .inbox-item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;border-bottom:1px solid #21262d}
+    .inbox-item:last-child{border-bottom:none}
+    .inbox-item:hover{background:#1c2128}
+    .inbox-item .item-text{flex:1}
+    .inbox-item .inbox-time{font-size:11px;color:#6e7681}
+    .inbox-del{background:none;border:none;color:#484f58;cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+    .inbox-del:hover{color:#f85149}
+    .inbox-empty{padding:12px 14px;font-size:13px;color:#484f58;font-style:italic}
     @media(max-width:600px){
       body{padding:10px}
       .metrics{grid-template-columns:repeat(2,1fr)}
@@ -61,6 +86,7 @@
 <div class="wrap">
   <h1>command center</h1>
   <div class="sub">Comeback Gear LLC — HeardUp / SubFinder / Ebook / RevText</div>
+  <div id="inbox"></div>
   <div class="metrics" id="metrics"></div>
   <div class="filters" id="filters"></div>
   <div id="sections"></div>
@@ -69,9 +95,10 @@
 
 <script>
 // ===== TASK DATA — UPDATE THIS BLOCK TO REFRESH DASHBOARD =====
-const LAST_UPDATED = "May 1, 2026 7:30 PM ET";
+// Last synced against actual git repo state (main vs dev) on May 2, 2026
+var LAST_UPDATED = "May 2, 2026 — repo-verified";
 
-const DATA = {
+var DATA = {
   "Quick wins": {
     color: "#3fb950",
     items: [
@@ -85,16 +112,42 @@ const DATA = {
   "HeardUp — blocking": {
     color: "#f85149",
     items: [
-      { t: "Custom invite flow (Resend)", s: "done", n: "Done on dev, needs cherry-pick" },
+      { t: "Cloudflare for TLS/DNS", s: "high", n: "Xfinity blocks all *.tryheardup.com" },
       { t: "Telnyx auto-recharge + alerts", s: "todo", n: "SMS went down May 1" },
       { t: "Org creation must seed default location", s: "todo", n: "Blocks next onboarding" },
       { t: "CSV import: map to real location IDs", s: "todo" }
     ]
   },
+  "HeardUp — on main (shipped)": {
+    color: "#3fb950",
+    items: [
+      { t: "Custom invite flow (Resend)", s: "done", n: "generateLink + Resend email" },
+      { t: "Invite observability logging", s: "done", n: "2c6aa80" },
+      { t: "Super-admin Team page + toast", s: "done", n: "066db88 + 0e4d6e6" },
+      { t: "Short link resolver fail-closed", s: "done", n: "d8f2b9b" },
+      { t: "Temporary availability", s: "done", n: "Full feature, 3 commits" },
+      { t: "SMS link shortening (publish + inbound)", s: "done", n: "f05c544 — short URL fix landed" },
+      { t: "Org roles (Chef, Barista dropdowns)", s: "done", n: "15f4ef6 — new since May 1" },
+      { t: "Clock-in/clock-out", s: "done", n: "Long established" },
+      { t: "Daily shift-length alert cron", s: "done", n: "72ea127" },
+      { t: "Add Manager flow", s: "done", n: "Squashed into 4c320ad" },
+      { t: "Toast CSV/Excel export", s: "done" },
+      { t: "Invite session collision fix", s: "done", n: "e6d9ca3" }
+    ]
+  },
+  "HeardUp — dev queue (cherry-pick to main)": {
+    color: "#a371f7",
+    items: [
+      { t: "Auth bundle: invite + session expiry + redirect fix", s: "ready", n: "1aba449 + f073162 + 91950a1 — land together" },
+      { t: "Reinvite + forgot password + recovery token", s: "ready", n: "2ade955" },
+      { t: "Mobile logout fix", s: "ready", n: "51ca6a9 — UserAvatar fixed top-right" },
+      { t: "SMS links use NEXT_PUBLIC_SITE_URL", s: "ready", n: "5e1f445" },
+      { t: "Shift Trade MVP", s: "testing", n: "5 commits — SMS keywords, Pool tab, Swaps tab" }
+    ]
+  },
   "HeardUp — bugs": {
     color: "#f0883e",
     items: [
-      { t: "No logout on mobile", s: "bug", n: "topBar display:none hides it" },
       { t: "CSV import: no hourly_rate", s: "bug" },
       { t: "CSV import: location = email domain", s: "inconclusive" },
       { t: "Wrong FROM on 'account not found'", s: "bug" },
@@ -104,21 +157,6 @@ const DATA = {
       { t: "Telnyx opt-out DB drift", s: "bug", n: "No webhook handler" },
       { t: "GSM-7 phases 2 & 3", s: "bug" },
       { t: "Quiz scoring", s: "inconclusive" }
-    ]
-  },
-  "HeardUp — dev queue": {
-    color: "#a371f7",
-    items: [
-      { t: "Invite observability logging", s: "ready", n: "1c7178a" },
-      { t: "Super-admin Team page + toast", s: "ready", n: "b10d3d6" },
-      { t: "Short link resolver fail-closed", s: "ready", n: "134c6eb" },
-      { t: "Temporary availability feature", s: "ready", n: "3 commits" },
-      { t: "Shift Trade web card", s: "testing", n: "Migration + API + Swaps tab" },
-      { t: "Team page enhancements", s: "ready" },
-      { t: "Custom invite flow (Resend)", s: "ready", n: "Tested e2e with iCloud" },
-      { t: "Session expiry auth guard", s: "ready" },
-      { t: "Redirect loop fix", s: "ready" },
-      { t: "Dev SMS link generators", s: "ready" }
     ]
   },
   "HeardUp — backlog": {
@@ -183,66 +221,139 @@ const DATA = {
 };
 // ===== END TASK DATA =====
 
-const BADGE = {
+var BADGE = {
   done:{l:"Done",c:"b-done"},ready:{l:"Ready",c:"b-ready"},testing:{l:"Testing",c:"b-testing"},
   high:{l:"High",c:"b-high"},bug:{l:"Bug",c:"b-bug"},inconclusive:{l:"Inconclusive",c:"b-inconclusive"},
   blocked:{l:"Blocked",c:"b-blocked"},paused:{l:"Paused",c:"b-paused"},deferred:{l:"Deferred",c:"b-deferred"},
   todo:{l:"To do",c:"b-todo"}
 };
 
-let filter = "all";
-let checked = JSON.parse(localStorage.getItem("dash_checked")||"{}");
+var filter = "all";
+var checked = JSON.parse(localStorage.getItem("dash_checked")||"{}");
+var inbox = JSON.parse(localStorage.getItem("dash_inbox")||"[]");
+var notes = JSON.parse(localStorage.getItem("dash_notes")||"{}");
+var editingNote = null;
 
-function save(){localStorage.setItem("dash_checked",JSON.stringify(checked))}
+function saveChecked(){localStorage.setItem("dash_checked",JSON.stringify(checked))}
+function saveInbox(){localStorage.setItem("dash_inbox",JSON.stringify(inbox))}
+function saveNotes(){localStorage.setItem("dash_notes",JSON.stringify(notes))}
 
 function count(statuses){
-  return Object.values(DATA).flatMap(s=>s.items).filter(i=>statuses.includes(i.s)).length;
+  return Object.values(DATA).flatMap(function(s){return s.items}).filter(function(i){return statuses.indexOf(i.s)!==-1}).length;
+}
+
+function renderInbox(){
+  var h = '<div class="inbox-wrap">';
+  h += '<div class="inbox-header"><h2>Inbox</h2>';
+  if(inbox.length) h += '<span class="inbox-count">'+inbox.length+'</span>';
+  h += '</div>';
+  h += '<div class="inbox-add"><input type="text" id="inbox-input" placeholder="Quick capture — type a task and hit enter" onkeydown="if(event.key===\'Enter\')addInbox()" />';
+  h += '<button onclick="addInbox()">Add</button></div>';
+  if(inbox.length === 0){
+    h += '<div class="inbox-empty">Empty — add stuff here as you think of it, tell Claude to sync later.</div>';
+  } else {
+    inbox.forEach(function(item, i){
+      h += '<div class="inbox-item">';
+      h += '<div class="item-text">'+esc(item.text)+'</div>';
+      h += '<span class="inbox-time">'+item.time+'</span>';
+      h += '<button class="inbox-del" onclick="delInbox('+i+')" title="Remove">x</button>';
+      h += '</div>';
+    });
+  }
+  h += '</div>';
+  document.getElementById("inbox").innerHTML = h;
+}
+
+function addInbox(){
+  var inp = document.getElementById("inbox-input");
+  var val = inp.value.trim();
+  if(!val) return;
+  var now = new Date();
+  var timeStr = (now.getMonth()+1)+"/"+now.getDate()+" "+now.getHours()+":"+String(now.getMinutes()).padStart(2,"0");
+  inbox.unshift({text: val, time: timeStr});
+  saveInbox();
+  renderInbox();
+  renderMetrics();
+  setTimeout(function(){document.getElementById("inbox-input").focus()},50);
+}
+
+function delInbox(i){
+  inbox.splice(i, 1);
+  saveInbox();
+  renderInbox();
+  renderMetrics();
+}
+
+function esc(s){
+  var d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderMetrics(){
+  var all = Object.values(DATA).flatMap(function(s){return s.items});
+  var checkedCount = Object.keys(checked).length;
+  var notesCount = Object.keys(notes).length;
+  document.getElementById("metrics").innerHTML = [
+    met("Total",all.length + inbox.length,"#f0f6fc"),
+    met("Done",count(["done"])+checkedCount,"#3fb950"),
+    met("Ready to ship",count(["ready","testing"]),"#58a6ff"),
+    met("Bugs",count(["bug","inconclusive"]),"#f85149"),
+    met("Notes",notesCount,"#f0883e")
+  ].join("");
 }
 
 function render(){
-  const all = Object.values(DATA).flatMap(s=>s.items);
-  const checkedCount = Object.keys(checked).length;
+  renderMetrics();
 
-  document.getElementById("metrics").innerHTML = [
-    met("Total",all.length,"#f0f6fc"),
-    met("Done / checked",count(["done"])+checkedCount,"#3fb950"),
-    met("Ready to ship",count(["ready","testing"]),"#58a6ff"),
-    met("Bugs",count(["bug","inconclusive"]),"#f85149"),
-    met("High / blocked",count(["high","blocked"]),"#f0883e")
-  ].join("");
-
-  const keys = Object.keys(DATA);
-  let fh = '<button class="'+(filter==="all"?"active":"")+'" onclick="setF(\'all\')">All</button>';
-  keys.forEach(k=>{
+  var keys = Object.keys(DATA);
+  var fh = '<button class="'+(filter==="all"?"active":"")+'" onclick="setF(\'all\')">All</button>';
+  keys.forEach(function(k){
     fh+='<button class="'+(filter===k?"active":"")+'" onclick="setF(\''+k.replace(/'/g,"\\'")+"')\">"+k+" ("+DATA[k].items.length+")</button>";
   });
   document.getElementById("filters").innerHTML = fh;
 
-  let sh = "";
-  keys.forEach(name=>{
+  var sh = "";
+  keys.forEach(function(name){
     if(filter!=="all"&&filter!==name)return;
-    const sec = DATA[name];
+    var sec = DATA[name];
     sh+='<div class="section"><div class="sec-head" onclick="toggle(this)">';
     sh+='<div class="sec-dot" style="background:'+sec.color+'"></div>';
     sh+='<div class="sec-title">'+name+'</div>';
     sh+='<div class="sec-count">'+sec.items.length+'</div>';
     sh+='<div class="sec-arrow open">&#9654;</div></div>';
     sh+='<div class="sec-body">';
-    sec.items.forEach((item,i)=>{
-      const key = name+"::"+i;
-      const ck = checked[key]||item.s==="done";
+    sec.items.forEach(function(item,i){
+      var key = name+"::"+i;
+      var safeKey = key.replace(/'/g,"\\'");
+      var ck = checked[key]||item.s==="done";
+      var userNote = notes[key]||"";
+      var isEditing = editingNote === key;
       sh+='<div class="item">';
-      sh+='<div class="item-check'+(ck?" checked":"")+'" onclick="chk(\''+key.replace(/'/g,"\\'")+'\',this)"></div>';
+      sh+='<div class="item-row">';
+      sh+='<div class="item-check'+(ck?" checked":"")+'" onclick="chk(\''+safeKey+'\')"></div>';
       sh+='<div class="item-text'+(ck?" checked-text":"")+'">'+item.t+'</div>';
       if(item.n)sh+='<div class="item-note">'+item.n+'</div>';
-      const b=BADGE[item.s]||BADGE.todo;
+      var b=BADGE[item.s]||BADGE.todo;
       sh+='<span class="badge '+b.c+'">'+b.l+'</span>';
+      sh+='<button class="note-btn'+(userNote?" has-note":"")+'" onclick="toggleNote(\''+safeKey+'\')" title="'+(userNote?"Edit note":"Add note")+'">&#9998;</button>';
+      sh+='</div>';
+      if(isEditing){
+        sh+='<input class="user-note-edit" id="note-edit-'+i+'" value="'+esc(userNote)+'" placeholder="Add a note..." onkeydown="if(event.key===\'Enter\')saveNote(\''+safeKey+'\',this.value)" onblur="saveNote(\''+safeKey+'\',this.value)" />';
+      } else if(userNote){
+        sh+='<div class="user-note"><span class="user-note-text">'+esc(userNote)+'</span></div>';
+      }
       sh+='</div>';
     });
     sh+='</div></div>';
   });
   document.getElementById("sections").innerHTML = sh;
   document.getElementById("updated").textContent = "Last updated: "+LAST_UPDATED;
+
+  if(editingNote){
+    var el = document.querySelector(".user-note-edit");
+    if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}
+  }
 }
 
 function met(label,val,color){
@@ -252,17 +363,31 @@ function met(label,val,color){
 function setF(f){filter=f;render()}
 
 function toggle(el){
-  const body=el.nextElementSibling;
-  const arrow=el.querySelector(".sec-arrow");
+  var body=el.nextElementSibling;
+  var arrow=el.querySelector(".sec-arrow");
   body.classList.toggle("collapsed");
   arrow.classList.toggle("open");
 }
 
-function chk(key,el){
+function chk(key){
   if(checked[key]){delete checked[key]}else{checked[key]=true}
-  save();render();
+  saveChecked();render();
 }
 
+function toggleNote(key){
+  if(editingNote===key){editingNote=null}else{editingNote=key}
+  render();
+}
+
+function saveNote(key,val){
+  val = val.trim();
+  if(val){notes[key]=val}else{delete notes[key]}
+  editingNote=null;
+  saveNotes();
+  render();
+}
+
+renderInbox();
 render();
 </script>
 </body>
