@@ -51,6 +51,10 @@
     .b-paused{background:#3d2e00;color:#d29922}
     .b-deferred{background:#21262d;color:#8b949e}
     .updated{font-size:11px;color:#484f58;text-align:center;margin-top:20px}
+    .sync-status{font-size:10px;color:#484f58;text-align:center;margin-top:4px}
+    .sync-status.syncing{color:#d29922}
+    .sync-status.synced{color:#3fb950}
+    .sync-status.error{color:#f85149}
     .note-btn{background:none;border:none;color:#484f58;cursor:pointer;font-size:14px;padding:0 2px;line-height:1;flex-shrink:0}
     .note-btn:hover{color:#58a6ff}
     .note-btn.has-note{color:#f0883e}
@@ -91,6 +95,7 @@
   <div class="filters" id="filters"></div>
   <div id="sections"></div>
   <div class="updated" id="updated"></div>
+  <div class="sync-status" id="sync-status"></div>
 </div>
 
 <script>
@@ -265,9 +270,76 @@ var inbox = JSON.parse(localStorage.getItem("dash_inbox")||"[]");
 var notes = JSON.parse(localStorage.getItem("dash_notes")||"{}");
 var editingNote = null;
 
-function saveChecked(){localStorage.setItem("dash_checked",JSON.stringify(checked))}
-function saveInbox(){localStorage.setItem("dash_inbox",JSON.stringify(inbox))}
-function saveNotes(){localStorage.setItem("dash_notes",JSON.stringify(notes))}
+// === Supabase sync ===
+var SB_URL = "https://ejirhzbcfagyrmyxhlhy.supabase.co";
+var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaXJoemJjZmFneXJteXhobGh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjc3MTEsImV4cCI6MjA4NzcwMzcxMX0.fdddLtmW2Oui_hBqMc6VC7nbis4XdqfN6LYkD5Tz9PM";
+var syncTimer = null;
+
+function setSyncStatus(text, cls) {
+  var el = document.getElementById("sync-status");
+  el.textContent = text;
+  el.className = "sync-status" + (cls ? " " + cls : "");
+}
+
+function saveLocal() {
+  localStorage.setItem("dash_checked", JSON.stringify(checked));
+  localStorage.setItem("dash_inbox", JSON.stringify(inbox));
+  localStorage.setItem("dash_notes", JSON.stringify(notes));
+}
+
+function syncToSupabase() {
+  if (syncTimer) clearTimeout(syncTimer);
+  setSyncStatus("saving...", "syncing");
+  syncTimer = setTimeout(function() {
+    fetch(SB_URL + "/rest/v1/dashboard_state?id=eq.default", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SB_KEY,
+        "Authorization": "Bearer " + SB_KEY,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        checked: checked,
+        inbox: inbox,
+        notes: notes,
+        updated_at: new Date().toISOString()
+      })
+    }).then(function(r) {
+      if (!r.ok) { setSyncStatus("sync failed", "error"); console.error("Sync failed:", r.status); }
+      else { setSyncStatus("synced", "synced"); setTimeout(function(){ setSyncStatus(""); }, 3000); }
+    }).catch(function(e) { setSyncStatus("offline — saved locally", "error"); console.error("Sync error:", e); });
+  }, 2000);
+}
+
+function saveChecked() { saveLocal(); syncToSupabase(); }
+function saveInbox() { saveLocal(); syncToSupabase(); }
+function saveNotes() { saveLocal(); syncToSupabase(); }
+
+function loadFromSupabase() {
+  fetch(SB_URL + "/rest/v1/dashboard_state?id=eq.default&select=*", {
+    headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY }
+  }).then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (rows.length > 0) {
+        var row = rows[0];
+        var hasRemote = (row.checked && Object.keys(row.checked).length > 0) ||
+                        (row.inbox && row.inbox.length > 0) ||
+                        (row.notes && Object.keys(row.notes).length > 0);
+        if (hasRemote) {
+          checked = row.checked || {};
+          inbox = row.inbox || [];
+          notes = row.notes || {};
+          saveLocal();
+          renderInbox(); render();
+          setSyncStatus("loaded from cloud", "synced");
+        } else {
+          syncToSupabase();
+        }
+        setTimeout(function(){ setSyncStatus(""); }, 3000);
+      }
+    }).catch(function(e) { console.error("Load error:", e); setSyncStatus("offline — using local", "error"); });
+}
 
 function count(statuses){
   return Object.values(DATA).flatMap(function(s){return s.items}).filter(function(i){return statuses.indexOf(i.s)!==-1}).length;
@@ -420,6 +492,7 @@ function saveNote(key,val){
 
 renderInbox();
 render();
+loadFromSupabase();
 </script>
 </body>
 </html>
