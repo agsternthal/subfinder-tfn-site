@@ -177,6 +177,8 @@ var DATA = {
   "HeardUp — bugs": {
     color: "#f0883e",
     items: [
+      { t: "Inbound SMS not tracked in sms_usage", s: "high", n: "HIGH PRIORITY — every inbound msg is untracked cost. Need direction=inbound + segments + staff_id" },
+      { t: "cost_cents field unreliable in sms_usage", s: "bug", n: "Shows different rates each month. Tracking code changed. Align to actual Telnyx rates" },
       { t: "CSV import: no hourly_rate", s: "bug" },
       { t: "CSV import: location = email domain", s: "inconclusive" },
       { t: "Wrong FROM on 'account not found'", s: "bug", n: "Error reply uses default Telnyx # instead of org's #" },
