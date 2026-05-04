@@ -95,8 +95,8 @@
 
 <script>
 // ===== TASK DATA — UPDATE THIS BLOCK TO REFRESH DASHBOARD =====
-// Last synced: May 2, 2026 (evening) — all Andrew's inbox/notes from screenshots processed
-var LAST_UPDATED = "May 2, 2026 (evening) — inbox processed, notes integrated";
+// Last synced: May 4, 2026 (morning) — added May 3 items, SubFinder phases verified done, Beads installed
+var LAST_UPDATED = "May 4, 2026 — Beads setup, new bugs, SubFinder phases verified";
 
 var DATA = {
   "Quick wins": {
@@ -165,7 +165,8 @@ var DATA = {
       { t: "Reinvite + forgot password + recovery token", s: "ready", n: "2ade955" },
       { t: "Mobile logout fix", s: "ready", n: "51ca6a9 — UserAvatar fixed top-right" },
       { t: "SMS links use NEXT_PUBLIC_SITE_URL", s: "ready", n: "5e1f445" },
-      { t: "Shift Trade MVP", s: "testing", n: "Andrew needs to test webcard on dev" }
+      { t: "Shift Trade MVP", s: "testing", n: "Andrew needs to test webcard on dev" },
+      { t: "Super-admin org switcher — mobile UI", s: "todo", n: "Need both logout + org switch visible on mobile" }
     ]
   },
   "HeardUp — bugs": {
@@ -178,7 +179,8 @@ var DATA = {
       { t: "Silent SMS catch blocks", s: "bug" },
       { t: "sms_name not in all handlers", s: "bug" },
       { t: "Telnyx opt-out DB drift", s: "bug", n: "COMPLIANCE: STOP works at Telnyx but DB never updates sms_opted_out" },
-      { t: "Quiz scoring", s: "inconclusive" }
+      { t: "Quiz scoring", s: "inconclusive" },
+      { t: "Cross-location scheduling — no warning", s: "bug", n: "Staff at one location can be scheduled at another with no guard or alert" }
     ]
   },
   "HeardUp — backlog": {
@@ -207,16 +209,17 @@ var DATA = {
   "SubFinder — auth & multi-tenancy": {
     color: "#f778ba",
     items: [
-      { t: "Phase 1: Schema prep", s: "done", n: "e22b637 — all tables + org_id on data tables" },
-      { t: "Phase 2: Auth clients + pages", s: "done", n: "e22b637 — @supabase/ssr, login/signup/callback/set-password" },
-      { t: "Phase 3: Middleware + org resolution", s: "done", n: "e0545cd — auth middleware + OrgContext" },
-      { t: "Phase 4: Org-scope all queries", s: "done", n: "429344f — 12 files with org_id filters" },
-      { t: "Phase 5: Tighten RLS", s: "done", n: "31a6c54 — restrictive policies, is_org_member()" },
-      { t: "Phase 6: Team invites", s: "done", n: "70bdb1c — /team page + invite flow" },
-      { t: "Phase 7: Super-admin", s: "done", n: "862043a — org switching + audit log" },
+      { t: "Phase 1: Schema prep", s: "done", n: "e22b637" },
+      { t: "Phase 2: Auth clients + pages", s: "done", n: "e22b637" },
+      { t: "Phase 3: Middleware + org resolution", s: "done", n: "e0545cd" },
+      { t: "Phase 4: Org-scope all queries", s: "done", n: "429344f" },
+      { t: "Phase 5: Tighten RLS", s: "done", n: "31a6c54" },
+      { t: "Phase 6: Team invites", s: "done", n: "70bdb1c" },
+      { t: "Phase 7: Super-admin", s: "done", n: "862043a" },
       { t: "10DLC brand + campaign app", s: "todo", n: "Use HeardUp's approved application as template" },
       { t: "Landing page deployment", s: "todo", n: "Claude Design created page, needs public URL" },
-      { t: "Get a URL for SubFinder", s: "todo", n: "Need domain" }
+      { t: "Get a URL for SubFinder", s: "todo", n: "Need domain" },
+      { t: "Beads issue tracking", s: "done", n: "Installed May 3, prefix subfinder, 4 issues seeded" }
     ]
   },
   "Ebook": {
